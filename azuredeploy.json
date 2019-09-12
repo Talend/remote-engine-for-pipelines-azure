@@ -39,7 +39,6 @@
                 "description": "Admin account for RE"
             }
         },
-
         "adminPasswordOrKey": {
             "type": "securestring",
             "metadata": {
@@ -281,7 +280,7 @@
             }
         },
         {
-            "apiVersion": "2018-02-01",
+            "apiVersion": "2015-01-01",
             "name": "pid-227cbf6d-18ef-5f75-8c5e-045ff92e8350",
             "type": "Microsoft.Resources/deployments",
             "properties": {
