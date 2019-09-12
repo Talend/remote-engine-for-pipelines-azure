@@ -1,0 +1,303 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "customSubnetId": {
+            "type": "string",
+            "defaultValue": "newVnet",
+            "metadata": {
+                "description": "Provide here your subnet resource id to place Remote Engine. To create new VNet for you keep this field blank."
+            }
+        },
+        "instanceSize": {
+            "type": "string",
+            "allowedValues": [
+                "Standard_B2ms",
+                "Standard_D2s_v3",
+                "Standard_D2_v3"
+            ],
+            "defaultValue": "Standard_B2ms",
+            "metadata": {
+                "description": "Remote Engine Instance size"
+            }
+        },
+        "authType": {
+            "type": "string",
+            "defaultValue": "password",
+            "allowedValues": [
+                "password",
+                "sshPublicKey"
+            ],
+            "metadata": {
+                "description": "Choose authentication type: admin password or SSH public key"
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "defaultValue": "centos",
+            "metadata": {
+                "description": "Admin account for RE"
+            }
+        },
+
+        "adminPasswordOrKey": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Admin password or SSH public key"
+            }
+        },
+        "preAuthorizedKey": {
+            "type": "string",
+            "metadata": {
+                "description": "Preauthorized key"
+            }
+        },
+        "nicSecurityGroup": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Security group for Network Adapter"
+            }
+        },
+        "utcTime": {
+            "type": "string",
+            "defaultValue": "[utcNow()]",
+            "metadata": {
+                "description": "Do not change this param"
+            }
+        }
+    },
+    "variables": {
+        "nicName": "[concat('remote-engine-nic-', uniquestring(parameters('utcTime')) )]",
+        "pipName": "[concat('remote-engine-pip-', uniquestring(parameters('utcTime')) )]",
+        "remoteEngineVmName": "[concat('remote-engine-vm-', uniquestring(parameters('utcTime')) )]",
+        "remoteEngineComputerName": "[concat('re-', uniquestring(parameters('utcTime')) )]",
+        "osDiskName": "[concat('remote-engine-osdisk-', uniquestring(parameters('utcTime')) )]",
+        "vnetName": "[concat('remote-engine-vnet-',uniquestring(resourceGroup().id))]",
+        "nsgName": "[concat('remote-engine-nsg-',uniquestring(resourceGroup().id))]",
+        "fqdnLabel": "[concat('re-', uniquestring(parameters('utcTime')) )]",
+        "vnetAddressPrefix": "10.0.0.0/16",
+        "vnetSubnetName": "default",
+        "vnetSubnetPrefix": "10.0.0.0/24",
+        "createOrNotVnet": "[equals(parameters('customSubnetId'),'newVnet')]",
+        "createOrNotNsg": "[if( variables('createOrNotVnet'), bool(1), bool(0))]",
+        "nicIpConfiguration": [
+            {
+                "name": "ipConfig1",
+                "properties": {
+                    "privateIPAllocationMethod": "Dynamic",
+                    "publicIPAddress": {
+                        "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('pipName'))]"
+                    },
+                    "subnet": {
+                        "id": "[if(variables('createOrNotVnet'), resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('vnetSubnetName')), parameters('customSubnetId'))]"
+                    }
+                }
+            }
+        ],
+        "nicPropertiesWithoutNsg": {
+            "ipConfigurations": "[variables('nicIpConfiguration')]"
+        },
+        "nicPropertiesWithNsg": {
+            "networkSecurityGroup": {
+                "id": "[parameters('nicSecurityGroup')]"
+            },
+            "ipConfigurations": "[variables('nicIpConfiguration')]"
+        },
+        "nicProperties": "[if( not(empty( parameters('nicSecurityGroup') )), variables('nicPropertiesWithNsg'), variables('nicPropertiesWithoutNsg') )]",
+        "reServerLocation": "us-west",
+        "sshPublicKey": {
+            "computerName": "[variables('remoteEngineComputerName')]",
+            "adminUsername": "[parameters('adminUsername')]",
+            "linuxConfiguration": {
+                "disablePasswordAuthentication": true,
+                "ssh": {
+                    "publicKeys": [
+                        {
+                            "path": "[concat('/home/',parameters('adminUsername'),'/.ssh/authorized_keys')]",
+                            "keyData": "[parameters('adminPasswordOrKey')]"
+                        }
+                    ]
+                }
+            }
+        },
+        "password": {
+            "computerName": "[variables('remoteEngineComputerName')]",
+            "adminUsername": "[parameters('adminUsername')]",
+            "adminPassword": "[parameters('adminPasswordOrKey')]"
+        }
+    },
+    "resources": [
+        {
+            "name": "[variables('pipName')]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2018-08-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "PublicIPAddress"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic",
+                "dnsSettings": {
+                    "domainNameLabel": "[variables('fqdnLabel')]"
+                }
+            }
+        },
+        {
+            "name": "[variables('nicName')]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2019-04-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('pipName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('vnetSubnetName'))]"
+            ],
+            "tags": {
+                "displayName": "Network Interface"
+            },
+            "properties": "[variables('nicProperties')]"
+        },
+        {
+            "name": "[variables('remoteEngineVmName')]",
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2019-03-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
+            ],
+            "tags": {
+                "displayName": "Remote Engine VM"
+            },
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('instanceSize')]"
+                },
+                "osProfile": "[variables(parameters('authType'))]",
+                "storageProfile": {
+                    "imageReference": {
+                        "offer": "CentOS",
+                        "publisher": "OpenLogic",
+                        "sku": "7.5",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "[variables('osDiskName')]",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "osType": "Linux"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
+                        }
+                    ]
+                }
+            },
+            "resources": [
+                {
+                    "name": "custom-script",
+                    "type": "extensions",
+                    "location": "[resourceGroup().location]",
+                    "apiVersion": "2019-03-01",
+                    "dependsOn": [
+                        "[variables('remoteEngineVmName')]"
+                    ],
+                    "properties": {
+                        "publisher": "Microsoft.Azure.Extensions",
+                        "type": "CustomScript",
+                        "typeHandlerVersion": "2.0",
+                        "autoUpgradeMinorVersion": false,
+                        "protectedSettings": {
+                            "fileUris": [
+                                "https://re4pstoragedev.blob.core.windows.net/scripts/provision.sh"
+                            ],
+                            "commandToExecute": "[concat('/var/lib/waagent/custom-script/download/0/provision.sh', ' ' , variables('reServerLocation'), ' ', parameters('preAuthorizedKey'))]"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "apiVersion": "2019-04-01",
+            "type": "Microsoft.Network/virtualNetworks",
+            "condition": "[variables('createOrNotVnet')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+            ],
+            "name": "[variables('vnetName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vnetAddressPrefix')]"
+                    ]
+                }
+            },
+            "resources": [
+                {
+                    "apiVersion": "2019-04-01",
+                    "type": "subnets",
+                    "condition": "[variables('createOrNotVnet')]",
+                    "location": "[resourceGroup().location]",
+                    "name": "[variables('vnetSubnetName')]",
+                    "dependsOn": [
+                        "[variables('vnetName')]",
+                        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+                    ],
+                    "properties": {
+                        "addressPrefix": "[variables('vnetSubnetPrefix')]",
+                        "networkSecurityGroup": {
+                            "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "apiVersion": "2015-06-15",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('nsgName')]",
+            "condition": "[variables('createOrNotNsg')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "allow_ssh",
+                        "properties": {
+                            "description": "Allow SSH connection to RE, from any destiantion",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2018-02-01",
+            "name": "pid-227cbf6d-18ef-5f75-8c5e-045ff92e8350",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": []
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "sshConnectionDetails": {
+            "type": "string",
+            "value": "[concat (parameters('adminUsername'), '@' ,reference(variables('pipName')).dnsSettings.fqdn)]"
+        }
+    }
+}
