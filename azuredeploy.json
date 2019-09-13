@@ -51,6 +51,16 @@
                 "description": "Preauthorized key"
             }
         },
+        "acceptEULA": {
+            "type": "string",
+            "defaultValue": "yes",
+            "allowedValues": [
+                "yes"
+            ],
+            "metadata": {
+                "description": "Accept Talend EULA license"
+            }
+        },
         "nicSecurityGroup": {
             "type": "string",
             "defaultValue": "",
