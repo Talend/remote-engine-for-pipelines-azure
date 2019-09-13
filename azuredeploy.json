@@ -51,6 +51,16 @@
                 "description": "Preauthorized key"
             }
         },
+        "acceptEULA": {
+            "type": "string",
+            "defaultValue": "yes",
+            "allowedValues": [
+                "yes"
+            ],
+            "metadata": {
+                "description": "You must accept the end-user licence agreement"
+            }
+        },
         "nicSecurityGroup": {
             "type": "string",
             "defaultValue": "",
