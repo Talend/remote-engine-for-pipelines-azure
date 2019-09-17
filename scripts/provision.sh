@@ -25,6 +25,7 @@ USER_ID=61000
 APP_USERNAME="talend"
 REGION=${1}
 PRE_AUTHORIZED_KEY=${2}
+ENVIRONMENT=${3}
 
 # Install python deps and docker
 sudo yum install -y python-pip
@@ -44,7 +45,7 @@ sudo systemctl start docker
 
 cd ${TALEND_DIR}
 
-curl -O https://re4pstoragedev.blob.core.windows.net/archives/pipeline-remote-engine.tar.gz
+curl -O "https://re4pstorage${ENVIRONMENT}.blob.core.windows.net/archives/pipeline-remote-engine.tar.gz"
 tar xvf pipeline-remote-engine.tar.gz
 cd pipeline-remote-engine
 
@@ -89,7 +90,7 @@ WantedBy=multi-user.target
 EOF
 '
 
-curl -O https://re4pstoragedev.blob.core.windows.net/scripts/remote-engine-for-pipelines.sh
+curl -O "https://re4pstorage${ENVIRONMENT}.blob.core.windows.net/scripts/remote-engine-for-pipelines.sh"
 sudo mv remote-engine-for-pipelines.sh /usr/local/bin
 sudo chmod +x /usr/local/bin/remote-engine-for-pipelines.sh
 sudo systemctl enable remote-engine-for-pipelines.service
