@@ -51,13 +51,13 @@
                 "description": "Preauthorized key"
             }
         },
-        "region": {
+        "talendRegion": {
             "type": "string",
             "allowedValues": [
-                "US West - Azure",
-                "US East - AWS",
-                "EU - AWS",
-                "AP - AWS"
+                "us-west",
+                "us",
+                "eu",
+                "ap"
             ],
             "metadata": {
                 "description": "Choose the region of your Talend account."
@@ -126,7 +126,6 @@
             "ipConfigurations": "[variables('nicIpConfiguration')]"
         },
         "nicProperties": "[if( not(empty( parameters('nicSecurityGroup') )), variables('nicPropertiesWithNsg'), variables('nicPropertiesWithoutNsg') )]",
-        "reServerLocation": "us-west",
         "sshPublicKey": {
             "computerName": "[variables('remoteEngineComputerName')]",
             "adminUsername": "[parameters('adminUsername')]",
@@ -232,9 +231,9 @@
                         "autoUpgradeMinorVersion": false,
                         "protectedSettings": {
                             "fileUris": [
-                                "https://re4pstoragedev.blob.core.windows.net/scripts/provision.sh"
+                                "https://re4pstorageprodus.blob.core.windows.net/scripts/provision.sh"
                             ],
-                            "commandToExecute": "[concat('/var/lib/waagent/custom-script/download/0/provision.sh', ' ' , variables('reServerLocation'), ' ', parameters('preAuthorizedKey'))]"
+                            "commandToExecute": "[concat('/var/lib/waagent/custom-script/download/0/provision.sh', ' ' , variables('talendRegion'), ' ', parameters('preAuthorizedKey'))]"
                         }
                     }
                 }
