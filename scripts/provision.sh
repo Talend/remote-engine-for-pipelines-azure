@@ -89,7 +89,7 @@ WantedBy=multi-user.target
 EOF
 '
 
-curl -O https://re4pstorageprodus.blob.core.windows.net/scripts/remote-engine-for-pipelines.sh
+curl -O https://raw.githubusercontent.com/Talend/remote-engine-for-pipelines-azure/master/scripts/remote-engine-for-pipelines.sh
 sudo mv remote-engine-for-pipelines.sh /usr/local/bin
 sudo chmod +x /usr/local/bin/remote-engine-for-pipelines.sh
 sudo systemctl enable remote-engine-for-pipelines.service
