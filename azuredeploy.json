@@ -56,7 +56,7 @@
             "allowedValues": [
                 "US West - Azure",
                 "US East - AWS",
-                "EU - AWS"
+                "EU - AWS",
                 "AP - AWS",
             ],
             "metadata": {
