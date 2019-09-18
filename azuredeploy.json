@@ -231,7 +231,7 @@
                         "autoUpgradeMinorVersion": false,
                         "protectedSettings": {
                             "fileUris": [
-                                "https://re4pstorageprodus.blob.core.windows.net/scripts/provision.sh"
+                                "https://raw.githubusercontent.com/Talend/remote-engine-for-pipelines-azure/master/scripts/provision.sh"
                             ],
                             "commandToExecute": "[concat('/var/lib/waagent/custom-script/download/0/provision.sh', ' ' , parameters('talendRegion'), ' ', parameters('preAuthorizedKey'))]"
                         }
