@@ -57,7 +57,7 @@
                 "US West - Azure",
                 "US East - AWS",
                 "EU - AWS",
-                "AP - AWS",
+                "AP - AWS"
             ],
             "metadata": {
                 "description": "Choose the region of your Talend account."
