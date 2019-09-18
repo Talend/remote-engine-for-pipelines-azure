@@ -233,7 +233,7 @@
                             "fileUris": [
                                 "https://re4pstorageprodus.blob.core.windows.net/scripts/provision.sh"
                             ],
-                            "commandToExecute": "[concat('/var/lib/waagent/custom-script/download/0/provision.sh', ' ' , variables('talendRegion'), ' ', parameters('preAuthorizedKey'))]"
+                            "commandToExecute": "[concat('/var/lib/waagent/custom-script/download/0/provision.sh', ' ' , parameters('talendRegion'), ' ', parameters('preAuthorizedKey'))]"
                         }
                     }
                 }
