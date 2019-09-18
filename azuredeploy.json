@@ -51,6 +51,18 @@
                 "description": "Preauthorized key"
             }
         },
+        "region": {
+            "type": "string",
+            "allowedValues": [
+                "US West - Azure",
+                "US East - AWS",
+                "EU - AWS"
+                "AP - AWS",
+            ],
+            "metadata": {
+                "description": "Choose the region of your Talend account."
+            }
+        },
         "acceptEULA": {
             "type": "string",
             "defaultValue": "yes",
