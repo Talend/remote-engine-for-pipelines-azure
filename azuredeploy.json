@@ -96,7 +96,6 @@
         "osDiskName": "[concat('remote-engine-osdisk-', uniquestring(parameters('utcTime')) )]",
         "vnetName": "[concat('remote-engine-vnet-',uniquestring(resourceGroup().id))]",
         "nsgName": "[concat('remote-engine-nsg-',uniquestring(resourceGroup().id))]",
-        "fqdnLabel": "[concat('re-', uniquestring(parameters('utcTime')) )]",
         "vnetAddressPrefix": "10.0.0.0/16",
         "vnetSubnetName": "default",
         "vnetSubnetPrefix": "10.0.0.0/24",
@@ -157,10 +156,7 @@
                 "displayName": "PublicIPAddress"
             },
             "properties": {
-                "publicIPAllocationMethod": "Dynamic",
-                "dnsSettings": {
-                    "domainNameLabel": "[variables('fqdnLabel')]"
-                }
+                "publicIPAllocationMethod": "Dynamic"
             }
         },
         {
@@ -317,7 +313,7 @@
     "outputs": {
         "sshConnectionDetails": {
             "type": "string",
-            "value": "[concat (parameters('adminUsername'), '@' ,reference(variables('pipName')).dnsSettings.fqdn)]"
+            "value": "[concat (parameters('adminUsername'), '@', reference(resourceId('Microsoft.Network/publicIPAddresses',variables('pipName'))).IpAddress])]"
         }
     }
 }
