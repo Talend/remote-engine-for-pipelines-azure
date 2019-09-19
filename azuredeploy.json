@@ -313,7 +313,7 @@
     "outputs": {
         "sshConnectionDetails": {
             "type": "string",
-            "value": "[concat (parameters('adminUsername'), '@', reference(resourceId('Microsoft.Network/publicIPAddresses',variables('pipName'))).IpAddress])]"
+            "value": "[concat (parameters('adminUsername'), '@', reference(resourceId('Microsoft.Network/publicIPAddresses',variables('pipName'))).IpAddress)]"
         }
     }
 }
