@@ -96,7 +96,6 @@
         "osDiskName": "[concat('remote-engine-osdisk-', uniquestring(parameters('utcTime')) )]",
         "vnetName": "[concat('remote-engine-vnet-',uniquestring(resourceGroup().id))]",
         "nsgName": "[concat('remote-engine-nsg-',uniquestring(resourceGroup().id))]",
-        "fqdnLabel": "[concat('re-', uniquestring(parameters('utcTime')) )]",
         "vnetAddressPrefix": "10.0.0.0/16",
         "vnetSubnetName": "default",
         "vnetSubnetPrefix": "10.0.0.0/24",
