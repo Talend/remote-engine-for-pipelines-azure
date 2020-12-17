@@ -54,7 +54,10 @@
         "talendRegion": {
             "type": "string",
             "allowedValues": [
-                "us-west", "us", "eu", "ap"
+                "us-west",
+                "us",
+                "eu",
+                "ap"
             ],
             "metadata": {
                 "description": "Choose the region of your Talend account."
@@ -154,10 +157,7 @@
                 "displayName": "PublicIPAddress"
             },
             "properties": {
-                "publicIPAllocationMethod": "Dynamic",
-                "dnsSettings": {
-                    "domainNameLabel": "[variables('fqdnLabel')]"
-                }
+                "publicIPAllocationMethod": "Dynamic"
             }
         },
         {
@@ -314,7 +314,7 @@
     "outputs": {
         "sshConnectionDetails": {
             "type": "string",
-            "value": "[concat (parameters('adminUsername'), '@' ,reference(variables('pipName')).dnsSettings.fqdn)]"
+            "value": "[concat (parameters('adminUsername'), '@', reference(resourceId('Microsoft.Network/publicIPAddresses',variables('pipName'))).IpAddress)]"
         }
     }
 }
